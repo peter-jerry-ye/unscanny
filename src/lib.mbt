@@ -237,7 +237,7 @@ pub fn Scanner::peek(self : Scanner) -> Char? {
   if self.done() {
     None
   } else {
-    Some(self.str.char_at(self.cursor))
+    self.str.get_char(self.cursor)
   }
 }
 
@@ -457,7 +457,7 @@ pub fn Scanner::eat_whitespace(self : Scanner) -> String {
 /// current cursor position.
 pub fn[T : Pattern] Scanner::expect(
   self : Scanner,
-  pat : T
+  pat : T,
 ) -> Unit raise Failure {
   let len = pat.matches(self.after())
   match len {
@@ -525,9 +525,9 @@ pub fn Scanner::snap(self : Scanner, index : Int) -> Int {
   let len = self.str.length()
   let mut pos = if index >= len { len } else { index }
   if pos > 0 && pos < len {
-    let code_unit = self.str.charcode_at(pos)
+    let code_unit = self.str[pos]
     if is_low_surrogate(code_unit) {
-      let prev_code_unit = self.str.charcode_at(pos - 1)
+      let prev_code_unit = self.str[pos - 1]
       if is_high_surrogate(prev_code_unit) {
         pos -= 1
       }
@@ -594,8 +594,8 @@ pub struct CharPredicate {
 
 ///|
 pub impl Pattern for CharPredicate with matches(self, str : String) {
-  guard not(str.is_empty()) && (self.pred)(str.char_at(0)) else { None }
-  Some(str.char_at(0).to_string().length())
+  guard str.get_char(0) is Some(c) && (self.pred)(c) else { None }
+  Some(c.to_string().length())
 }
 
 ///|
@@ -638,8 +638,7 @@ pub impl Pattern for String with expected(self) {
 
 ///|
 pub impl Pattern for Array[Char] with matches(self, str : String) {
-  guard str != "" else { None }
-  let next = str.char_at(0)
+  guard str.get_char(0) is Some(next) else { None }
   if self.search(next) is Some(_) {
     Some(next.to_string().length())
   } else {
