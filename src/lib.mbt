@@ -526,24 +526,14 @@ pub fn Scanner::snap(self : Scanner, index : Int) -> Int {
   let mut pos = if index >= len { len } else { index }
   if pos > 0 && pos < len {
     let code_unit = self.str[pos]
-    if is_low_surrogate(code_unit) {
+    if code_unit.is_trailing_surrogate() {
       let prev_code_unit = self.str[pos - 1]
-      if is_high_surrogate(prev_code_unit) {
+      if prev_code_unit.is_leading_surrogate() {
         pos -= 1
       }
     }
   }
   pos
-}
-
-///|
-fn is_high_surrogate(code_unit : Int) -> Bool {
-  code_unit >= 0xD800 && code_unit <= 0xDBFF
-}
-
-///|
-fn is_low_surrogate(code_unit : Int) -> Bool {
-  code_unit >= 0xDC00 && code_unit <= 0xDFFF
 }
 
 ///|
